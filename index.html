@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saturday Weekly Review</title>
+<style>
+:root{--bg:#f6f5f9;--card:#fff;--ink:#1d1b26;--mute:#6b6880;--line:#e3e0ee;--acc:#5b3fd1;--acc2:#ece7ff;--up:#17803d;--down:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14121c;--card:#1d1a29;--ink:#efedf7;--mute:#9a96b3;--line:#322e45;--acc:#9a84ff;--acc2:#2a2447;--up:#4ade80;--down:#f87171;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14121c;--card:#1d1a29;--ink:#efedf7;--mute:#9a96b3;--line:#322e45;--acc:#9a84ff;--acc2:#2a2447;--up:#4ade80;--down:#f87171;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--acc);margin:0 0 10px}
+.sub{color:var(--mute);font-size:13px;margin-bottom:12px}
+.tabs{display:flex;gap:6px;margin:12px 0;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:6px 0;z-index:5}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-weight:600;font-size:14px}
+.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--mute);margin:8px 0 3px}
+input[type=text],input[type=number],input[type=date],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:64px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chk{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:14px;color:var(--ink)}
+.chk input{width:20px;height:20px}
+.rep{display:grid;grid-template-columns:1fr 110px;gap:8px;margin-bottom:6px}
+.big{font-size:26px;font-weight:700}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--acc);background:var(--acc);color:#fff;font-weight:600;font-size:14px}
+.btn.alt{background:transparent;color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.hint{font-size:12px;color:var(--mute)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--mute)}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;background:var(--acc2);color:var(--acc);font-size:12px;font-weight:600}
+.rpt h3{margin:14px 0 4px;font-size:14px;color:var(--acc)}
+.rpt p{margin:2px 0;white-space:pre-wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--mute)}
+#status{font-size:12px;color:var(--mute)}
+@media print{.tabs,.noprint,#status{display:none!important}body{background:#fff;color:#000}.card{border:0;padding:0}}
+.pill.up{background:#17803d22;color:var(--up)}.pill.down{background:#c0392b22;color:var(--down)}.pill.amber{background:#e0a80022;color:#b7791f}details{margin-top:8px}.rep span{align-self:center}
+.rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.rtabs button{padding:8px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;font-weight:600;font-size:13px}.rtabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}.rtabs #addrep{border-style:dashed;color:var(--acc)}
+</style></head><body><div class="wrap">
+<h1>Saturday Weekly Review</h1>
+<div class="sub">Fill in, compare, and send up. <span id="status">Loading…</span></div>
+<div class="tabs"><button data-t="fill" class="on">Fill in</button><button data-t="cmp">Compare</button><button data-t="rpt">Boss report</button></div>
+<div id="app"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const N=v=>{const n=parseFloat(v);return isNaN(n)?null:n};
+let drawReps,repTab=0,S={reps:['Rep 1','Rep 2','Rep 3','Rep 4'],reviews:{}},tab='fill',cur=null,dbDoc=null,timer=null;
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const rep0=n=>({name:n,trph:'',predLast:'',ach:'',predNext:'',contacts:'',closes:'',flags:'',goal:'',kpi:'',keen:'',gap:'',focus:'',discuss:''});
+const blank=d=>({date:d,reps:S.reps.map(rep0),growth:'',converts:'',retained:'',total:'',fsCount:'',fsNote:'',slots:'',feel:'',convos:'',nextReps:'',outlook:'',loopsDone:false,loopsNote:'',tidy:false,filed:false,stars1v1:'',starsCalls:'',ideas:'',win:'',challenge:'',fail:'',hires:'',firstDay:'',speed:'',convPct:'',tenure:'',bottleneck:'',solution:'',direction:'',teamSays:'',setups:'',educ:'',expo:'',score:{temp:'',pred:'',acc:'',integ:'',comm:'',res:''},top20:'',catchup:'',didWell:'',didPoor:'',focuses:'',learn:'',oneFocus:'',myGap:'',discussBoss:''});
+const norm=r=>{const b=blank(r.date||today());const o=Object.assign(b,r);o.score=Object.assign(blank('').score,r.score||{});o.reps=(r.reps||[]).map(x=>Object.assign(rep0(''),x));return o};
+const SC=[['temp','Temperament','Ability to stay cool'],['pred','Prediction','Finger on the pulse, predicting team results'],['acc','Accuracy','How appropriate is what you’re doing for where you’re at'],['integ','Integrity','Your say-do gap: schedule and diary'],['comm','Communication','Attendance, showing up, staying in touch'],['res','Resourcefulness','Asking for help, using your network, saving money']];
+const scAvg=r=>{const v=Object.values(r.score).map(N).filter(x=>x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+const scLow=r=>{const l=SC.filter(([k])=>{const v=N(r.score[k]);return v!==null&&v<8}).map(x=>x[1]);return l.length?`<span class="hint"> · Work on: ${l.join(', ')}</span>`:''};
+const zone=v=>v===null?'':v>15?'<span class="pill">Platinum</span>':v>=10?'<span class="pill up">Green</span>':v>=7.5?'<span class="pill amber">Amber</span>':'<span class="pill down">Red</span>';
+const chip=(l,ok,txt)=>ok===null?'':`<span class="pill ${ok?'up':'down'}">${ok?'✓':'✗'} ${l}: ${txt}</span> `;
+function bench(r){const t=avg(r),a=N(r.fail),h=N(r.hires),f=N(r.firstDay),s=N(r.speed),c=N(r.convPct),q=ret(r),te=N(r.tenure);const b=(x,g)=>x===null?null:g(x);
+ return [chip('TRPH',b(t,x=>x>=11),'$'+(t===null?'':+t.toFixed(2))+' (target $11+)'),chip('Fail %',b(a,x=>x<=10),a+'% (aim 10% or less)'),chip('New hires',b(h,x=>x>=12.5),h+' (150/yr ≈ 13/mo)'),chip('First day on field',h&&f!==null?f/h*100>=60:null,h?Math.round(f/h*100)+'% (target ~60%)':''),chip('Speed to rep',b(s,x=>x<=4),s+' wks (aim ≤4, max 6)'),chip('Conversion',b(c,x=>x>=33),c+'% (target 33%+)'),chip('Rep ratio',b(q,x=>x>=65&&x<=85),(q===null?'':Math.round(q)+'%')+' (65–85%)'),chip('Avg tenure',b(te,x=>x>=26),te+' wks (target 26+)')].join('')||'<span class="hint">Fill in the numbers to see how you stack up.</span>'}
+const sum=(r,k)=>{const v=r.reps.map(x=>N(x[k])).filter(x=>x!==null);return v.length?v.reduce((a,b)=>a+b,0):null};
+const totals=r=>{const c=sum(r,'contacts'),s=sum(r,'closes');return `<b>TOTAL</b> · Team TRPH ${fv(avg(r),2,'')} · Contacts ${c??'–'} · Closes ${s??'–'}${c&&s!==null?' · Close rate '+Math.round(s/c*100)+'%':''}`};
+function live(){const r=S.reviews[cur];if(!r)return;const set=(i,h)=>{const e=$('#'+i);if(e)e.innerHTML=h};
+ set('avg',fv(avg(r),2,''));set('ret',fv(ret(r),0,'%'));set('bench',bench(r));set('sc',fv(scAvg(r),1,'')+scLow(r));set('tot',totals(r));
+ r.reps.forEach((x,i)=>{set('z'+i,zone(N(x.trph)));const tb=document.querySelector('[data-rt="'+i+'"]');if(tb)tb.textContent=x.name||'New rep'})}
+const wkAvg=(key,f,n=4)=>{const v=keys().filter(k=>k<=key).slice(-n).map(k=>f(S.reviews[k])).filter(x=>x!==null);return v.length>1?{v:v.reduce((a,b)=>a+b,0)/v.length,n:v.length}:null};
+const sec=(t,v)=>v?`<h3>${t}</h3><p>${esc(v)}</p>`:'';
+const dirLbl={up:'⬆ Up',side:'➡ Sideways (most dangerous, act now)',down:'⬇ Down'};
+const keys=()=>Object.keys(S.reviews).sort();
+const fmtD=d=>new Date(d+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+const avg=r=>{const v=r.reps.map(x=>N(x.trph)).filter(x=>x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+const ret=r=>{const a=N(r.retained),b=N(r.total);return a!==null&&b?a/b*100:null};
+const M=[['Team TRPH (avg)',r=>avg(r),2,''],['Fail percentage',r=>N(r.fail),0,'%down'],['Growth (new recruits)',r=>N(r.growth),0,''],['Converts (new promotions)',r=>N(r.converts),0,''],['Rep ratio',r=>ret(r),0,'%'],['Avg tenure (wks)',r=>N(r.tenure),0,''],['Speed to rep (wks)',r=>N(r.speed),1,'down'],['New starts converting',r=>N(r.convPct),0,'%'],['Fast Start eligible',r=>N(r.fsCount),0,''],['Recruitment slots open',r=>N(r.slots),0,'down'],['Team feel (1–5)',r=>N(r.feel),0,''],['Personal scorecard (avg)',r=>scAvg(r),1,'']];
+const fv=(v,d,u)=>v===null?'–':(+v.toFixed(d))+(u[0]==='%'?'%':'');
+function delta(a,b,lowGood){if(a===null||b===null)return '';const x=a-b;if(Math.abs(x)<1e-9)return '<span class="flat"> ▬</span>';const good=lowGood?x<0:x>0;return `<span class="${good?'up':'down'}"> ${x>0?'▲':'▼'}${+Math.abs(x).toFixed(1)}</span>`}
+function setStatus(t){$('#status').textContent=t}
+async function persist(){
+  try{localStorage.setItem('wr_v1',JSON.stringify(S))}catch(e){}
+  if(dbDoc){try{await dbDoc.set({json:JSON.stringify(S)});setStatus('Saved ✓')}catch(e){setStatus('Saved on this device only')}}
+  else setStatus('Saved on this device only');
+}
+function save(){setStatus('Saving…');clearTimeout(timer);timer=setTimeout(persist,600)}
+async function load(){
+  let local=null;try{local=JSON.parse(localStorage.getItem('wr_v1'))}catch(e){}
+  if(local)S=Object.assign(S,local);
+  try{
+    const claude=window.claude;const db=claude&&await claude.use('db'),user=claude&&await claude.use('user');
+    if(db&&user){const id=await user.id();dbDoc=db.collection('data/users/'+id).doc('reviews');
+      const snap=await Promise.race([dbDoc.get(),new Promise(r=>setTimeout(()=>r(null),8000))]);
+      if(snap&&snap.exists){try{const d=JSON.parse(snap.data().json);S=Object.assign(S,d)}catch(e){}}
+      else if(local)persist();}
+  }catch(e){}
+  setStatus(dbDoc?'Synced ✓':'Saved on this device only');
+  Object.keys(S.reviews).forEach(k=>S.reviews[k]=norm(S.reviews[k]));
+  const k=keys();cur=k.length?k[k.length-1]:null;render();
+}
+function ensure(){if(!cur){cur=today();}if(!S.reviews[cur])S.reviews[cur]=blank(cur)}
+function fill(){
+  ensure();const r=S.reviews[cur];const ks=keys();
+  const opts=[...new Set([...ks,cur])].sort().reverse().map(k=>`<option value="${k}" ${k===cur?'selected':''}>${fmtD(k)}${S.reviews[k]&&ks.includes(k)?'':' (new)'}</option>`).join('');
+  const ta=(k,l,ph='')=>`<label>${l}</label><textarea data-k="${k}" placeholder="${ph}">${esc(r[k])}</textarea>`;
+  const nu=(k,l)=>`<div><label>${l}</label><input type="number" inputmode="decimal" data-k="${k}" value="${esc(r[k])}"></div>`;
+  const ck=(k,l)=>`<label class="chk"><input type="checkbox" data-k="${k}" ${r[k]?'checked':''}>${l}</label>`;
+  const op=(v,l)=>`<option value="${v}" ${r.direction===v?'selected':''}>${l}</option>`;
+  const sc=SC.map(([k,n,h])=>`<div><label>${n}<br><span class="hint">${h}</span></label><input type="number" min="1" max="10" inputmode="decimal" data-s="${k}" value="${esc(r.score[k])}"></div>`).join('');
+  const repCard=(x,i)=>{const f=(k,l,t='text')=>`<div><label>${l}</label><input type="${t}" ${t==='number'?'inputmode="decimal"':''} data-r="${i}" data-k="${k}" value="${esc(x[k])}"></div>`;const a=(k,l)=>`<label>${l}</label><textarea data-r="${i}" data-k="${k}">${esc(x[k])}</textarea>`;
+   return `<div class="card"><div class="rep"><input type="text" data-r="${i}" data-k="name" value="${esc(x.name)}"><span id="z${i}">${zone(N(x.trph))}</span></div>
+   <div class="g2">${f('trph','Individual profitability ($TRPH)','number')}${f('predLast','Min. prediction last week (consignments:sales)')}${f('ach','Achieved (consignments:sales)')}${f('predNext','Min. prediction next week')}${f('contacts','Contacts','number')}${f('closes','Closes','number')}</div>${a('flags','Quality red flags')}
+   <div class="hint" style="margin-top:10px"><b>Summary</b></div><div class="g2">${f('keen','How keen on the industry long-term? (/10)','number')}${f('goal','Biggest goal')}</div>${a('kpi','KPI problem areas')}${a('gap','Biggest gap (in general)')}${a('focus','Biggest focus for coming week')}${a('discuss','To discuss with '+esc(x.name||'this rep'))}<div class="row noprint"><button class="btn alt" id="delrep">Remove this rep</button></div></div>`};
+  drawReps=()=>{repTab=Math.min(repTab,r.reps.length-1);return `<div class="rtabs">${r.reps.map((x,i)=>`<button data-rt="${i}" class="${i===repTab?'on':''}">${esc(x.name||'New rep')}</button>`).join('')}<button id="addrep" class="noprint">+ Add rep</button></div>${repCard(r.reps[repTab],repTab)}`};
+  return `<div class="card"><h2>Week</h2><div class="g2"><div><label>Review for week ending</label><input type="date" id="wk" value="${cur}"></div><div><label>Saved reviews</label><select id="sel">${opts}</select></div></div>
+  <div class="row noprint"><button class="btn alt" id="newb">+ New blank review</button><button class="btn alt" id="copyb">Copy last week’s plan</button></div></div>
+  <div class="card"><h2>Team metric diagnosis · the business</h2><div class="hint">Team TRPH (from your reps below): <b id="avg">${fv(avg(r),2,'')}</b> · Rep ratio: <b id="ret">${fv(ret(r),0,'%')}</b></div>
+  <div class="g2">${nu('fail','Profit: fail percentage (%) · aim 10% or less')}${nu('hires','Growth: new hires over last month')}${nu('firstDay','…of those, first day on field')}${nu('growth','Growth: new recruits this week')}${nu('speed','Conversion: speed to rep (weeks) · aim ≤4, max 6')}${nu('convPct','% of new starts that hit rep · aim 33%+')}${nu('converts','Convert: new promotions this week')}${nu('tenure','Stability: average tenure (weeks) · aim 26+')}${nu('retained','Stability: # of reps')}${nu('total','Stability: total team size')}</div>
+  <div class="hint">Rep ratio sits between 65% and 85%. Nearer 65% = convert what you have; nearer 85% = ready for growth.</div><div id="bench" style="margin:8px 0">${bench(r)}</div>
+  ${ta('bottleneck','What is the bottleneck from the 4 dominoes?')}${ta('solution','What’s the solution? (resources are always time, money or attention)')}</div>
+  <div class="card"><h2>Team metric diagnosis · the team</h2><label>Is the direction of the team up, down or sideways?</label><select data-k="direction"><option value="">Choose…</option>${op('up','Up')}${op('side','Sideways')}${op('down','Down')}</select>
+  <div class="hint">Sideways is the most dangerous. No new highs means new lows. Ask the team, not the leader.</div>${ta('teamSays','What does the team say? Is the trajectory on the up?')}
+  <div class="hint" style="margin-top:8px">3 things you can do to change direction:</div>${ta('setups','1. Set ups (mate, trainer or coach; too much of one is bad)')}${ta('educ','2. Education (BDM, answering questions, running topics)')}${ta('expo','3. Exposure (another office, another MD, events like Rising Star)')}</div>
+  <div class="card"><h2>Team metric diagnosis · you</h2><div class="hint">Personal scorecard, rating out of 10. Goal: 8/10 in all. Average: <b id="sc">${fv(scAvg(r),1,'')}${scLow(r)}</b></div><div class="g2">${sc}</div></div>
+  <div class="card"><h2>Individual performance review</h2><div class="hint">Zones by RPH: Platinum above $15 · Green $10–15 · Amber $7.50–10 · Red below $7.50</div><div id="tot" style="margin-top:6px">${totals(r)}</div></div>
+  <div id="repsec">${drawReps()}</div>
+  <div class="card"><h2>Questions to answer</h2>${ta('top20','Who are the 20% of people I should focus 80% of my time on?')}${ta('catchup','Who do I need to catch up with this week?')}${ta('didWell','What did I do well last week?')}${ta('didPoor','What did I do poorly last week?')}${ta('focuses','What are my focuses for this week?')}${ta('learn','What am I planning to learn this week?')}${ta('oneFocus','What is my one biggest focus this week?')}${ta('myGap','What is my biggest gap and how do I close it?')}${ta('discussBoss','To discuss with my boss / upline')}</div>
+  <div class="card"><h2>Fast Start</h2><div class="g2">${nu('fsCount','Gift cards: # eligible')}<div></div></div><div class="hint">2 weeks = $500 · 4 weeks = $250</div>${ta('fsNote','Who is on track for Fast Start?')}</div>
+  <div class="card"><h2>Family tree audit</h2><div class="g2">${nu('slots','Recruitment slots to fill')}${nu('feel','“Feel” for team (1–5)')}</div>${ta('convos','Convos needed')}${ta('nextReps','Next reps (who is up next?)')}${ta('outlook','Next 6–8 weeks: bird’s-eye view')}</div>
+  <div class="card"><h2>Admin & territory</h2>${ck('loopsDone','Emails / Telegram / iMessage reviewed, loops closed')}${ta('loopsNote','Open loops still to close')}${ck('tidy','Territory maps tidy, marked & up to date')}${ck('filed','Open / unused / completed maps filed correctly')}</div>
+  <div class="card"><h2>Rising stars</h2>${ta('stars1v1','1 v 1 list')}${ta('starsCalls','Text / calls list')}${ta('ideas','Core ideas for the week (layered education)')}</div>
+  <div class="card"><h2>For the boss</h2>${ta('win','Biggest win this week')}${ta('challenge','Biggest challenge / support needed')}</div>
+  <div class="row noprint"><button class="btn" id="tor">View boss report →</button><button class="btn alt" id="delb">Delete this review</button></div>`;
+}
+function cmp(){
+  const k=keys().slice(-6);if(!k.length)return '<div class="card">No saved reviews yet. Fill in your first one on the Fill in tab.</div>';
+  const rs=k.map(x=>S.reviews[x]);
+  let h=`<div class="card"><h2>Progress over last ${k.length} week${k.length>1?'s':''}</h2><div class="hint">▲▼ shows change vs the week before (green = better).</div><div class="scroll"><table><tr><th></th>${k.map(x=>`<th>${fmtD(x).replace(/ \d{4}$/,'')}</th>`).join('')}</tr>`;
+  M.forEach(([n,f,d,u])=>{h+=`<tr><td>${n}</td>${rs.map((r,i)=>`<td>${fv(f(r),d,u)}${i?delta(f(r),f(rs[i-1]),u.endsWith('down')):''}</td>`).join('')}</tr>`});
+  h+='</table></div></div>';
+  const names=[...new Set(rs.flatMap(r=>r.reps.map(x=>x.name)))];
+  h+=`<div class="card"><h2>TRPH by rep</h2><div class="scroll"><table><tr><th></th>${k.map(x=>`<th>${fmtD(x).replace(/ \d{4}$/,'')}</th>`).join('')}</tr>${names.map(n=>`<tr><td>${esc(n)}</td>${rs.map((r,i)=>{const f=q=>{const x=r.reps.find(y=>y.name===n);return x?N(x.trph):null};const p=i?rs[i-1]:null;return `<td>${fv(f(),2,'')}${p?delta(f(),(()=>{const x=p.reps.find(y=>y.name===n);return x?N(x.trph):null})(),false):''}</td>`}).join('')}</tr>`).join('')}</table></div></div>`;
+  return h;
+}
+function rptData(key){
+  const r=S.reviews[key];if(!r)return null;const ks=keys(),i=ks.indexOf(key),p=i>0?S.reviews[ks[i-1]]:null;return {r,p,pk:p?ks[i-1]:null};
+}
+function reportHTML(key){
+  const D=rptData(key);if(!D)return '<p>No review for this week yet.</p>';const {r,p}=D;
+  const kp=M.slice(0,6).map(([n,f,d,u],i)=>{const w=i<2?wkAvg(key,f):null;return `<div class="kpi"><span>${n}</span><b>${fv(f(r),d,u)}${p?delta(f(r),f(p),u.endsWith('down')):''}</b>${w?`<span style="display:block">${w.n}-wk avg: ${fv(w.v,d,u)}</span>`:''}</div>`}).join('');
+  const pr=(x,k)=>{const q=p&&p.reps.find(y=>y.name===x.name);return q?N(q[k]):null};
+  const reps=r.reps.filter(x=>x.name).map(x=>`<tr><td>${esc(x.name)}</td><td>${fv(N(x.trph),2,'')}${delta(N(x.trph),pr(x,'trph'),false)} ${zone(N(x.trph))}</td><td>${esc(x.predLast||'–')} → ${esc(x.ach||'–')}</td><td>${esc(x.predNext||'–')}</td><td>${esc(x.contacts||'–')} / ${esc(x.closes||'–')}</td><td style="white-space:normal">${esc(x.flags||'')}</td></tr>`).join('');
+  const sums=r.reps.filter(x=>x.goal||x.kpi||x.gap||x.focus||x.keen).map(x=>`<p><b>${esc(x.name)}</b>${x.keen?` (keen ${esc(x.keen)}/10)`:''}: ${[x.goal&&'Goal: '+esc(x.goal),x.kpi&&'KPI issues: '+esc(x.kpi),x.gap&&'Gap: '+esc(x.gap),x.focus&&'Focus: '+esc(x.focus)].filter(Boolean).join(' · ')}</p>`).join('');
+  const sc=SC.map(([k,n])=>`${n} <b>${esc(r.score[k]||'–')}</b>`).join(' · ');
+  return `<h2 style="margin-top:0">Weekly review · week ending ${fmtD(key)}</h2><div class="hint">${p?'Changes compared with '+fmtD(D.pk):'First review: no comparison yet'}</div>
+  <div class="kpis" style="margin:10px 0">${kp}</div><div>${bench(r)}</div><div class="rpt">
+  ${sec('Biggest win',r.win)}${sec('Challenge / support needed',r.challenge)}${sec('Bottleneck',r.bottleneck)}${sec('Solution',r.solution)}
+  <h3>Team direction</h3><p>${dirLbl[r.direction]||'Not rated'}</p>${sec('What the team says',r.teamSays)}${sec('Set ups',r.setups)}${sec('Education',r.educ)}${sec('Exposure',r.expo)}
+  <h3>Reps</h3><div class="scroll"><table><tr><th>Rep</th><th>TRPH</th><th>Predicted → achieved</th><th>Next week</th><th>Contacts / closes</th><th>Red flags</th></tr>${reps}<tr><td><b>Team avg / total</b></td><td><b>${fv(avg(r),2,'')}</b> ${zone(avg(r))}</td><td></td><td></td><td>${sum(r,'contacts')??'–'} / ${sum(r,'closes')??'–'}</td><td></td></tr></table></div>${sums}
+  ${sec('Fast Start gift cards',r.fsNote)}
+  <h3>Family tree</h3><p>Recruitment slots to fill: ${fv(N(r.slots),0,'')} · Team feel: ${fv(N(r.feel),0,'')}/5</p>${sec('Convos needed',r.convos)}${sec('Next reps',r.nextReps)}${sec('Next 6–8 weeks',r.outlook)}
+  <h3>Admin & territory</h3><p>${r.loopsDone?'✅':'⬜'} Messages reviewed, loops closed${r.loopsNote?' (open: '+esc(r.loopsNote)+')':''}<br>${r.tidy?'✅':'⬜'} Territory maps tidy & up to date<br>${r.filed?'✅':'⬜'} Open / unused / completed maps filed</p>
+  ${sec('Rising stars: 1 v 1s',r.stars1v1)}${sec('Rising stars: texts / calls',r.starsCalls)}${sec('Core ideas for the week',r.ideas)}
+  <h3>My scorecard (goal 8/10)</h3><p>${sc}</p>${sec('Focus 80% of time on',r.top20)}${sec('Catch up with this week',r.catchup)}${sec('Did well last week',r.didWell)}${sec('Did poorly last week',r.didPoor)}${sec('Focuses this week',r.focuses)}${sec('Learning this week',r.learn)}${sec('One biggest focus',r.oneFocus)}${sec('My biggest gap and how I close it',r.myGap)}${sec('To discuss with you',r.discussBoss)}</div>`;
+}
+function reportText(key){
+  const D=rptData(key);if(!D)return '';const {r,p}=D;const L=[`WEEKLY REVIEW — week ending ${fmtD(key)}`,''];
+  M.forEach(([n,f,d,u],i)=>{const a=f(r),b=p?f(p):null,w=i<2?wkAvg(key,f):null;if(a!==null)L.push(`${n}: ${fv(a,d,u)}${w?` [${w.n}-wk avg ${fv(w.v,d,u)}]`:''}${b!==null?` (${a-b>=0?'+':''}${+(a-b).toFixed(1)} vs last week)`:''}`)});
+  const add=(t,v)=>{if(v)L.push('',t+':',v)};
+  add('Biggest win',r.win);add('Challenge / support needed',r.challenge);add('Bottleneck',r.bottleneck);add('Solution',r.solution);
+  L.push('','Team direction: '+(dirLbl[r.direction]||'not rated'));add('What the team says',r.teamSays);add('Set ups',r.setups);add('Education',r.educ);add('Exposure',r.expo);
+  L.push('','Reps:',...r.reps.filter(y=>y.name).map(y=>`- ${y.name}: TRPH ${fv(N(y.trph),2,'')}; predicted ${y.predLast||'–'}, achieved ${y.ach||'–'}; next week ${y.predNext||'–'}; contacts ${y.contacts||'–'}, closes ${y.closes||'–'}${y.flags?'; red flags: '+y.flags:''}${y.goal||y.gap||y.focus?`\n   Goal: ${y.goal||'–'} | Gap: ${y.gap||'–'} | Focus: ${y.focus||'–'}`:''}`));
+  add('Fast Start',r.fsNote);L.push('',`Recruitment slots to fill: ${fv(N(r.slots),0,'')} | Team feel: ${fv(N(r.feel),0,'')}/5`);
+  add('Convos needed',r.convos);add('Next reps',r.nextReps);add('Next 6–8 weeks',r.outlook);
+  L.push('',`Messages/loops closed: ${r.loopsDone?'Yes':'No'}${r.loopsNote?' ('+r.loopsNote+')':''}`,`Territory maps tidy: ${r.tidy?'Yes':'No'} | Filed correctly: ${r.filed?'Yes':'No'}`);
+  add('Rising stars 1v1s',r.stars1v1);add('Rising stars texts/calls',r.starsCalls);add('Core ideas for the week',r.ideas);
+  L.push('',`My scorecard (goal 8/10): ${SC.map(([k,n])=>`${n} ${r.score[k]||'–'}`).join(' · ')}`);
+  add('Focus 80% of time on',r.top20);add('Did well last week',r.didWell);add('Did poorly last week',r.didPoor);add('Focuses this week',r.focuses);add('Learning this week',r.learn);add('One biggest focus',r.oneFocus);add('My biggest gap',r.myGap);add('To discuss with you',r.discussBoss);
+  return L.join('\n');
+}
+function rpt(){
+  const k=keys();if(!k.length)return '<div class="card">Fill in a review first, then your report appears here.</div>';
+  if(!S.reviews[cur])cur=k[k.length-1];
+  return `<div class="card noprint"><label>Week</label><select id="sel">${[...k].reverse().map(x=>`<option value="${x}" ${x===cur?'selected':''}>${fmtD(x)}</option>`).join('')}</select>
+  <div class="row"><button class="btn" id="cp">Copy as text</button><button class="btn alt" id="dl">Download .html</button><button class="btn alt" id="pr">Print / save PDF</button></div><div class="hint" id="rmsg">Text version is ideal for WhatsApp, Telegram or email.</div></div><div class="card" id="rep">${reportHTML(cur)}</div>`;
+}
+function render(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  $('#app').innerHTML=tab==='fill'?fill():tab==='cmp'?cmp():rpt();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+const app=$('#app');
+function onEdit(e){
+  const t=e.target;
+  const k=t.dataset.k,sk=t.dataset.s;if(!(k||sk)||!S.reviews[cur])return;const r=S.reviews[cur];
+  const v=t.type==='checkbox'?t.checked:t.value;
+  if(sk)r.score[sk]=v;
+  else if(t.dataset.r!==undefined){r.reps[+t.dataset.r][k]=v;if(k==='name')S.reps=r.reps.map(x=>x.name)}else r[k]=v;
+  live();save();
+}
+app.addEventListener('input',onEdit);app.addEventListener('change',e=>{if(e.target.dataset.k)return onEdit(e)});
+app.addEventListener('change',e=>{
+  if(e.target.id==='sel'){cur=e.target.value;render()}
+  if(e.target.id==='wk'){const nk=e.target.value;if(!nk||nk===cur)return;if(S.reviews[nk]){cur=nk;render();return}
+    S.reviews[nk]=S.reviews[cur];S.reviews[nk].date=nk;delete S.reviews[cur];cur=nk;save();render()}
+});
+app.addEventListener('click',async e=>{
+  const id=e.target.id;
+  const rt=e.target.dataset.rt;if(rt!==undefined){repTab=+rt;$('#repsec').innerHTML=drawReps();live();return}
+  const R=S.reviews[cur];
+  if(id==='addrep'){R.reps.push(rep0(''));S.reps=R.reps.map(x=>x.name);repTab=R.reps.length-1;$('#repsec').innerHTML=drawReps();live();save();const n=document.querySelector('#repsec input[data-k="name"]');if(n){n.placeholder='Rep name';n.focus()}return}
+  if(id==='delrep'){if(R.reps.length<2){alert('Keep at least one rep.');return}if(confirm('Remove '+(R.reps[repTab].name||'this rep')+' from this review?')){R.reps.splice(repTab,1);S.reps=R.reps.map(x=>x.name);repTab=Math.max(0,repTab-1);$('#repsec').innerHTML=drawReps();live();save()}return}
+  if(id==='newb'){cur=today();let d=new Date();while(S.reviews[cur]){d.setDate(d.getDate()+7);cur=new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}S.reviews[cur]=blank(cur);save();render()}
+  if(id==='copyb'){const ks=keys().filter(x=>x<cur);if(!ks.length){alert('No earlier review to copy from.');return}const p=S.reviews[ks[ks.length-1]],r=S.reviews[cur];['convos','nextReps','outlook','stars1v1','starsCalls','bottleneck','solution'].forEach(f=>{if(!r[f])r[f]=p[f]});save();render()}
+  if(id==='delb'){if(confirm('Delete the review for '+fmtD(cur)+'?')){delete S.reviews[cur];const k=keys();cur=k.length?k[k.length-1]:null;save();render()}}
+  if(id==='tor'){tab='rpt';render()}
+  if(id==='cp'){const t=reportText(cur);try{await navigator.clipboard.writeText(t);$('#rmsg').textContent='Copied ✓'}catch(_){const x=document.createElement('textarea');x.value=t;$('#rep').after(x);x.select();try{document.execCommand('copy');$('#rmsg').textContent='Copied ✓'}catch(__){$('#rmsg').textContent='Select the text box below and copy it manually.'}}}
+  if(id==='pr'){try{window.print()}catch(_){$('#rmsg').textContent='Printing is blocked here; use Download .html instead.'}}
+  if(id==='dl'){const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Weekly review ${cur}</title><style>body{font:15px/1.5 system-ui,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#1d1b26}h3{color:#5b3fd1;margin:14px 0 4px;font-size:14px}p{margin:2px 0;white-space:pre-wrap}table{border-collapse:collapse}td,th{padding:4px 12px;border-bottom:1px solid #ddd;text-align:left}.kpis{display:flex;gap:8px;flex-wrap:wrap}.kpi{border:1px solid #ddd;border-radius:8px;padding:6px 10px}.kpi b{display:block;font-size:18px}.kpi span,.hint{font-size:12px;color:#666}.up{color:#17803d}.down{color:#c0392b}.flat{color:#888}.pill{padding:1px 8px;border-radius:9px;background:#eee;font-size:12px}.pill.up{color:#17803d}.pill.down{color:#c0392b}.pill.amber{color:#b7791f}h2{font-size:18px}</style></head><body>${reportHTML(cur)}</body></html>`;
+    try{const d=await window.claude.use('downloads');if(!d)throw 0;await d.save({filename:`weekly-review-${cur}.html`,data:html});$('#rmsg').textContent='Saved ✓'}catch(_){$('#rmsg').textContent='Download unavailable here; use Copy as text instead.'}}
+});
+load();
+</script></body></html>
